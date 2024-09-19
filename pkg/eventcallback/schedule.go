@@ -18,7 +18,7 @@ type Schedule struct {
 	Email string    // Email of the Person In Charge
 }
 
-func parseDate(dateStr string) (time.Time, error) {
+func ParseDate(dateStr string) (time.Time, error) {
 	date, err := time.Parse(constants.DateFormat, dateStr)
 	if err != nil {
 		return time.Time{}, errors.New(constants.ErrorDateParse + ": " + err.Error())
@@ -27,7 +27,7 @@ func parseDate(dateStr string) (time.Time, error) {
 }
 
 // Read schedules from file
-func readSchedules(filename string) ([]Schedule, error) {
+func ReadSchedules(filename string) ([]Schedule, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, errors.New(constants.ErrorFileOpen + ": " + err.Error())
@@ -46,7 +46,7 @@ func readSchedules(filename string) ([]Schedule, error) {
 		pic := strings.TrimSpace(parts[0])
 		dateStr := strings.TrimSpace(parts[1])
 		email := strings.TrimSpace(parts[2])
-		date, err := parseDate(dateStr)
+		date, err := ParseDate(dateStr)
 		if err != nil {
 			return nil, errors.New(constants.ErrorInvalidDateFormat + ": " + pic)
 		}
@@ -67,7 +67,7 @@ func readSchedules(filename string) ([]Schedule, error) {
 
 // UpdatePreviousPICDate updates the date of the previous PIC
 func UpdatePreviousPICDate(filename, currentPIC string) error {
-	schedules, err := readSchedules(filename)
+	schedules, err := ReadSchedules(filename)
 	if err != nil {
 		return err
 	}
@@ -130,7 +130,7 @@ func UpdatePreviousPICDate(filename, currentPIC string) error {
 }
 
 // Get the start and end date of the current week
-func getCurrentWeekRange() (time.Time, time.Time) {
+func GetCurrentWeekRange() (time.Time, time.Time) {
 	loc := time.FixedZone("Asia/Jakarta", 7*60*60)
 	now := time.Now().In(loc)
 
@@ -149,7 +149,7 @@ func getCurrentWeekRange() (time.Time, time.Time) {
 }
 
 // Display PICs within a date range
-func displayPICsWithinRange(schedules []Schedule, startDate, endDate time.Time) string {
+func DisplayPICsWithinRange(schedules []Schedule, startDate, endDate time.Time) string {
 	var result strings.Builder
 
 	for _, schedule := range schedules {
@@ -169,7 +169,7 @@ func displayPICsWithinRange(schedules []Schedule, startDate, endDate time.Time) 
 }
 
 // Display the full schedule
-func displayFullSchedule(schedules []Schedule) string {
+func DisplayFullSchedule(schedules []Schedule) string {
 	var result strings.Builder
 
 	// Sort schedules by date

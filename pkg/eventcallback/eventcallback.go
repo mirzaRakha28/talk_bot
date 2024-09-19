@@ -38,36 +38,73 @@ func NewEventCallbackService(cfg *config.Config) *EventCallbackService {
 func (s *EventCallbackService) scheduleJobs() {
 	// Schedule a job to run at 12 AM every Tuesday in Jakarta time
 	s.cron.AddFunc("25 14 * * 3", func() {
-		s.performScheduledTask()
+		s.performScheduledPIC()
+	})
+	s.cron.AddFunc("0 0 * * 5", func() {
+		s.performScheduledReminderReturnRefund()
 	})
 	s.cron.Start()
 }
 
-// performScheduledTask checks if it's 12 AM Tuesday in Jakarta and performs the task
-func (s *EventCallbackService) performScheduledTask() {
-	filename := "stock_inventory_schedule.txt"
+// performScheduledReminderReturnRefund checks if it's 12 AM Friday in Jakarta and performs the task
+// for reminding test return and refund
+func (s *EventCallbackService) performScheduledReminderReturnRefund() {
+	req := request.SendMessageToBotGroupRequest{
+		GroupID: s.config.RegressionGroupID, // Replace with the actual group ID
+		Message: request.MessageGroup{
+			Tag: "Text",
+			Text: request.TextGroup{
+				Format:  1,
+				Content: constants.ReminderReturnRefund, // Use the constructed data as the message content
+			},
+		},
+	}
 
+	// Send the message to the group
+	if _, err := s.SendMessageToGroup(req); err != nil {
+		log.Println("Failed to send message to group:", err)
+	}
+}
+
+// performScheduledTask checks if it's 12 AM Tuesday in Jakarta and performs the task
+func (s *EventCallbackService) performScheduledPIC() {
+	filename := "stock_inventory_schedule.txt"
 	// Read schedules from file
-	schedules, err := readSchedules(filename)
+	schedules, err := ReadSchedules(filename)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-
 	// Get the start and end date of the current week
-	startOfWeek, endOfWeek := getCurrentWeekRange()
+	startOfWeek, endOfWeek := GetCurrentWeekRange()
 
 	// Display PICs for the current week
 	data := "PICs for this week: \n"
 	// Display PICs for the current week
-	data += displayPICsWithinRange(schedules, startOfWeek, endOfWeek)
-	schedules, err = readSchedules(filename)
+	data += DisplayPICsWithinRange(schedules, startOfWeek, endOfWeek)
+	schedules, err = ReadSchedules(filename)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	// Display the full schedule
-	data += displayFullSchedule(schedules)
+	data += DisplayFullSchedule(schedules)
+
+	req := request.SendMessageToBotGroupRequest{
+		GroupID: s.config.RegressionGroupID, // Replace with the actual group ID
+		Message: request.MessageGroup{
+			Tag: "Text",
+			Text: request.TextGroup{
+				Format:  1,
+				Content: data, // Use the constructed data as the message content
+			},
+		},
+	}
+
+	// Send the message to the group
+	if _, err := s.SendMessageToGroup(req); err != nil {
+		log.Println("Failed to send message to group:", err)
+	}
 }
 
 // HandleEventCallback is the HTTP handler for event callbacks
