@@ -44,4 +44,3 @@ jobs:
           docker stop myapp || true  # Stop the old container if running
           docker rm myapp || true    # Remove the old container if it exists
           docker run -d --name myapp -p 8080:8080 mirzarakha2804/talk_bot:latest
-          
