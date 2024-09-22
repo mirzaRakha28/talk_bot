@@ -11,39 +11,55 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v2  # Check out the repository code
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      uses: docker/setup-buildx-action@v2  # Set up Docker Buildx for multi-platform builds
 
     - name: Login to Docker Hub
-      uses: docker/login-action@v2
+      uses: docker/login-action@v2  # Log in to Docker Hub
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        username: ${{ secrets.DOCKER_USERNAME }}  # Username stored in GitHub Secrets
+        password: ${{ secrets.DOCKER_PASSWORD }}  # Password stored in GitHub Secrets
 
     - name: Build and Push Docker Image
       run: |
-        docker build -t mirzarakha2804/talk_bot:latest .
-        docker push mirzarakha2804/talk_bot:latest
+        echo "Building Docker Image..."
+        docker build -t mirzarakha2804/talk_bot:latest . || { echo "Docker build failed"; exit 1; }
+        echo "Pushing Docker Image to Docker Hub..."
+        docker push mirzarakha2804/talk_bot:latest || { echo "Docker push failed"; exit 1; }
 
   deploy:
-    needs: build
+    needs: build  # Ensure this job runs after the build job
     runs-on: ubuntu-latest
 
     steps:
     - name: Deploy to VPS via SSH
-      uses: appleboy/ssh-action@v0.1.3
+      uses: appleboy/ssh-action@v0.1.3  # Use SSH action to deploy to VPS
       with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USER }}
-        key: ${{ secrets.VPS_SSH_KEY }}
-        passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
+        host: ${{ secrets.VPS_HOST }}  # VPS host stored in GitHub Secrets
+        username: ${{ secrets.VPS_USER }}  # Username for VPS stored in GitHub Secrets
+        key: ${{ secrets.VPS_SSH_KEY }}  # SSH private key stored in GitHub Secrets
+        passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}  # Passphrase for the SSH key (if required)
         script: |
-          docker pull mirzarakha2804/talk_bot:latest
-          docker stop myapp || true  # Stop the old container if running
-          docker rm myapp || true    # Remove the old container if it exists
-          docker run -d --name myapp -p 8080:8080 mirzarakha2804/talk_bot:latest
-
-
+          set -e  # Exit on any error
           
+          echo "Pulling latest Docker image..."
+          docker pull mirzarakha2804/talk_bot:latest || { echo "Docker pull failed"; exit 1; }
+          
+          echo "Stopping the old container (if running)..."
+          docker stop myapp || echo "No running container to stop"
+          
+          echo "Removing the old container (if exists)..."
+          docker rm myapp || echo "No existing container to remove"
+          
+          echo "Running the new Docker container..."
+          docker run -d --name myapp -p 8080:8080 mirzarakha2804/talk_bot:latest || { echo "Docker run failed"; docker logs myapp; exit 1; }
+          
+          echo "Deployment finished successfully."
+
+    - name: Show Docker Logs on Failure
+      if: failure()  # This step runs only if the previous step fails
+      run: |
+        echo "Showing Docker logs..."
+        docker logs myapp
