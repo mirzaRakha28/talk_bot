@@ -46,7 +46,9 @@ jobs:
         VPS_HOST: ${{ secrets.VPS_HOST }}              # Your VPS IP
         VPS_USER: ${{ secrets.VPS_USER }}              # Your VPS username
       run: |
+        echo "============================================="
         echo "${{ secrets.VPS_SSH_KEY }}"
+        echo "============================================="
         # Install SSH client
         sudo apt-get update
         sudo apt-get install -y openssh-client
