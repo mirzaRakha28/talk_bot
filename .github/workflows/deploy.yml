@@ -76,3 +76,9 @@ jobs:
 
           # Stop and remove the existing container if it's running
           docker stop talk_bot || true
+          docker rm talk_bot || true
+
+          # Run the new container with port mapping
+          docker run -d --name talk_bot -p 5000:5000 mirzarakha2804/talk_bot:latest
+        EOF
+        
