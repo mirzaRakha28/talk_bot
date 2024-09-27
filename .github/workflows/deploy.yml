@@ -40,14 +40,16 @@ jobs:
         echo "VPS_HOST: $VPS_HOST"
         echo "VPS_USER: $VPS_USER"
 
-    - name: Start ssh-agent
-      uses: webfactory/ssh-agent@v0.5.3
-      with:
-        ssh-private-key: ${{ secrets.VPS_SSH_KEY }}  # Your private SSH key for VPS access
-
-    - name: Verify SSH key is loaded
+    - name: Write SSH key to file
       run: |
-        ssh-add -l  # List added SSH keys to confirm
+        mkdir -p ~/.ssh
+        echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/mirza.pem
+        chmod 600 ~/.ssh/mirza.pem
+
+    - name: Start ssh-agent and add key
+      run: |
+        eval "$(ssh-agent -s)"
+        ssh-add ~/.ssh/mirza.pem
 
     - name: Deploy to VPS via SSH
       run: |
