@@ -34,17 +34,17 @@ jobs:
     steps:
     - name: Set environment variables
       env:
-        VPS_HOST: ${{ secrets.VPS_HOST }}
-        VPS_USER:  ${{ secrets.VPS_USER }}
+        VPS_HOST: 103.175.219.140
+        VPS_USER: arvalinno
       run: |
         echo "VPS_HOST: $VPS_HOST"
         echo "VPS_USER: $VPS_USER"
     
     - name: Deploy to VPS via SSH
       env: 
-        SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
-        VPS_HOST: ${{ secrets.VPS_HOST }}
-        VPS_USER: ${{ secrets.VPS_USER }}
+        SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}  # This should be your private key content
+        VPS_HOST: ${{ secrets.VPS_HOST }}              # Your VPS IP
+        VPS_USER: ${{ secrets.VPS_USER }}              # Your VPS username
       run: |
         # Install SSH client
         sudo apt-get update
@@ -52,14 +52,14 @@ jobs:
         
         # Add SSH key
         mkdir -p ~/.ssh
-        echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+        echo "${SSH_PRIVATE_KEY}" > ~/.ssh/mirza.pem
+        chmod 600 ~/.ssh/mirza.pem
         
         # Add VPS to known hosts to prevent prompt
         ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts
 
         # Run the deployment commands
-        ssh $VPS_USER@$VPS_HOST << 'EOF'
+        ssh -i ~/.ssh/mirza.pem $VPS_USER@$VPS_HOST << 'EOF'
           # Pull the latest image from Docker Hub
           docker pull mirzarakha2804/talk_bot:latest
 
