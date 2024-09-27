@@ -39,31 +39,24 @@ jobs:
       run: |
         echo "VPS_HOST: $VPS_HOST"
         echo "VPS_USER: $VPS_USER"
-    
-    - name: Deploy to VPS via SSH
-      env: 
-        SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}  # This should be your private key content
-        VPS_HOST: ${{ secrets.VPS_HOST }}              # Your VPS IP
-        VPS_USER: ${{ secrets.VPS_USER }}              # Your VPS username
-      run: |
-        echo "============================================="
-        echo "${{ secrets.VPS_SSH_KEY }}"
-        echo "============================================="
-        # Install SSH client
-        sudo apt-get update
-        sudo apt-get install -y openssh-client
-        
-        # Add SSH key
-        mkdir -p ~/.ssh
-        echo "${SSH_PRIVATE_KEY}" > ~/.ssh/mirza.pem
-        chmod 600 ~/.ssh/mirza.pem
-        
-        # Add VPS to known hosts to prevent prompt
-        ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts
 
-        # Run the deployment commands
-        ssh -i ~/.ssh/mirza.pem $VPS_USER@$VPS_HOST << 'EOF'
-          # Pull the latest image from Docker Hub
+    - name: Start ssh-agent
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.VPS_SSH_KEY }}  # Your private SSH key for VPS access
+
+    - name: Verify SSH key is loaded
+      run: |
+        ssh-add -l  # List added SSH keys to confirm
+
+    - name: Deploy to VPS via SSH
+      run: |
+        # Add VPS to known hosts to prevent prompt
+        ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+        
+        # Deploying the application to VPS
+        ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          # Pull the latest Docker image
           docker pull mirzarakha2804/talk_bot:latest
 
           # Stop and remove the existing container if it's running
@@ -74,3 +67,6 @@ jobs:
           docker run -d --name talk_bot mirzarakha2804/talk_bot:latest
         EOF
 
+    - name: Confirm Deployment Success
+      run: |
+        echo "Deployment to VPS completed successfully."
