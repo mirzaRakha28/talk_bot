@@ -34,19 +34,39 @@ jobs:
     steps:
     - name: Set environment variables
       env:
-        VPS_HOST: 103.175.219.140
-        VPS_USER: arvalinno
+        VPS_HOST: ${{ secrets.VPS_HOST }}
+        VPS_USER:  ${{ secrets.VPS_USER }}
       run: |
         echo "VPS_HOST: $VPS_HOST"
         echo "VPS_USER: $VPS_USER"
-    - name: Transfer app.env to VPS
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          echo "${SSH_PRIVATE_KEY}" > private_key.pem
-          chmod 600 private_key.pem
-          docker pull mirzarakha2804/talk_bot:latest
-          docker stop myapp || true  # Stop the old container if running
-          docker rm myapp || true    # Remove the old container if it exists
-          docker run -d --name myapp -p 8080:8080 mirzarakha2804/talk_bot:latest
     
+    - name: Deploy to VPS via SSH
+      env: 
+        SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
+        VPS_HOST: ${{ secrets.VPS_HOST }}
+        VPS_USER: ${{ secrets.VPS_USER }}
+      run: |
+        # Install SSH client
+        sudo apt-get update
+        sudo apt-get install -y openssh-client
+        
+        # Add SSH key
+        mkdir -p ~/.ssh
+        echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        
+        # Add VPS to known hosts to prevent prompt
+        ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts
+
+        # Run the deployment commands
+        ssh $VPS_USER@$VPS_HOST << 'EOF'
+          # Pull the latest image from Docker Hub
+          docker pull mirzarakha2804/talk_bot:latest
+
+          # Stop and remove the existing container if it's running
+          docker stop talk_bot || true
+          docker rm talk_bot || true
+
+          # Run the new container
+          docker run -d --name talk_bot mirzarakha2804/talk_bot:latest
+        EOF
