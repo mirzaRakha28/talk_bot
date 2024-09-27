@@ -79,6 +79,6 @@ jobs:
           docker rm talk_bot || true
 
           # Run the new container with port mapping
-          docker run -d --name talk_bot -p 5000:5000 mirzarakha2804/talk_bot:latest
+          docker run -d --name talk_bot -p 5010:5010 mirzarakha2804/talk_bot:latest
         EOF
         
