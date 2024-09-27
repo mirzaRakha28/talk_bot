@@ -39,7 +39,7 @@ jobs:
       run: |
         echo "VPS_HOST: $VPS_HOST"
         echo "VPS_USER: $VPS_USER"
-     - name: Transfer app.env to VPS
+    - name: Transfer app.env to VPS
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
