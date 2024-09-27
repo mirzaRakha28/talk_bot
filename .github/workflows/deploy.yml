@@ -70,3 +70,4 @@ jobs:
           # Run the new container
           docker run -d --name talk_bot mirzarakha2804/talk_bot:latest
         EOF
+
