@@ -10,82 +10,83 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and Push Docker Image
-      run: |
-        docker build -t mirzarakha2804/talk_bot:latest .
-        docker push mirzarakha2804/talk_bot:latest
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t mirzarakha2804/talk_bot:latest .
+          docker push mirzarakha2804/talk_bot:latest
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-    - name: Set environment variables
-      env:
-        VPS_HOST: 103.175.219.140
-        VPS_USER: arvalinno
-      run: |
-        echo "VPS_HOST: $VPS_HOST"
-        echo "VPS_USER: $VPS_USER"
+      - name: Set environment variables
+        env:
+          VPS_HOST: 103.175.219.140
+          VPS_USER: arvalinno
+        run: |
+          echo "VPS_HOST: $VPS_HOST"
+          echo "VPS_USER: $VPS_USER"
     
-    - name: Add SSH private key
-      run: |
-        # Install SSH client
-        sudo apt-get update
-        sudo apt-get install -y openssh-client
+      - name: Add SSH private key
+        run: |
+          # Install SSH client
+          sudo apt-get update
+          sudo apt-get install -y openssh-client
 
-        # Create .ssh directory and add SSH key
-        mkdir -p ~/.ssh
-        echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/mirza.pem
-        chmod 600 ~/.ssh/mirza.pem
+          # Create .ssh directory and add SSH key
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/mirza.pem
+          chmod 600 ~/.ssh/mirza.pem
         
-    - name: Debug SSH connection
-      run: |
-        # Add VPS to known hosts to prevent prompt
-        ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
-        echo "this success"
-        # Attempt to connect to VPS with verbose output for debugging
-        ssh -i ~/.ssh/mirza.pem -vvv -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "echo 'Connection successful!'"
-        echo "this success"
+      - name: Debug SSH connection
+        run: |
+          # Add VPS to known hosts to prevent prompt
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+          echo "this succes"
+          # Attempt to connect to VPS with verbose output for debugging
+          ssh -i ~/.ssh/mirza.pem -vvv -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "echo 'Connection successful!'"
+          echo "this succes"
 
-    - name: Deploy to VPS via SSH
-      if: ${{ success() }}
-      run: |
-        # Stop if previous command fails
-        set -e
+      - name: Deploy to VPS via SSH
+        if: ${{ success() }}
+        run: |
+          # Stop if previous command fails
+          set -e
 
-        # Add VPS to known hosts to prevent prompt
-        ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+          # Add VPS to known hosts to prevent prompt
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-        # SSH into the VPS and pull Docker image, stop the old container, and run the new one
-        ssh -i ~/.ssh/mirza.pem -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-          # Pull the latest image from Docker Hub
-          docker pull mirzarakha2804/talk_bot:latest
+          # SSH into the VPS and pull Docker image, stop the old container, and run the new one
+          ssh -i ~/.ssh/mirza.pem -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+            # Pull the latest image from Docker Hub
+            docker pull mirzarakha2804/talk_bot:latest
 
-          # Stop and remove the existing container if it's running
-          docker stop talk_bot || true
-          docker rm talk_bot || true
+            # Stop and remove the existing container if it's running
+            docker stop talk_bot || true
+            docker rm talk_bot || true
 
-          # Run the new container with port mapping and environment variables
-          docker run -d \
-            --name talk_bot \
-            -p 5010:5030 \
-            -e SEATALK_API_URL=https://openapi.seatalk.io \
-            -e SEATALK_AUTH_URL=https://openapi.seatalk.io/auth/app_access_token \
-            -e SEATALK_SEND_SINGLE_CHAT_URL=https://openapi.seatalk.io/messaging/v2/single_chat \
-            -e SEATALK_SEND_GROUP_CHAT_URL=https://openapi.seatalk.io/messaging/v2/group_chat \
-            -e PORT=5030 \
-            mirzarakha2804/talk_bot:latest
-        EOF
+            # Run the new container with port mapping and environment variables
+            docker run -d --name talk_bot -p 5030:5030 \
+              --env SEATALK_APP_ID=${{ secrets.SEATALK_APP_ID }} \
+              --env SEATALK_APP_SECRET=${{ secrets.SEATALK_APP_SECRET }} \
+              --env REGRESSION_GROUP_ID=${{ secrets.REGRESSION_GROUP_ID }} \
+              --env SEATALK_API_URL=https://openapi.seatalk.io \
+              --env SEATALK_AUTH_URL=https://openapi.seatalk.io/auth/app_access_token \
+              --env SEATALK_SEND_SINGLE_CHAT_URL=https://openapi.seatalk.io/messaging/v2/single_chat \
+              --env SEATALK_SEND_GROUP_CHAT_URL=https://openapi.seatalk.io/messaging/v2/group_chat \
+              --env PORT=5030 \
+              mirzarakha2804/talk_bot:latest
+          EOF
