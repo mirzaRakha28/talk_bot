@@ -13,9 +13,6 @@ RUN go mod download
 # Copy the entire Go project (including main.go) into the container
 COPY . .
 
-# Copy the .env file
-COPY .env ./
-
 # Build the Go binary and name it 'seatalk-bot'
 RUN go build -o seatalk-bot ./main.go
 
@@ -27,9 +24,6 @@ WORKDIR /root/
 
 # Copy the Go binary from the builder container
 COPY --from=builder /app/seatalk-bot .
-
-# Copy the .env file
-COPY --from=builder /app/.env ./
 
 # Expose port 5030 for the application
 EXPOSE 5030
