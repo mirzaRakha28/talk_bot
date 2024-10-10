@@ -36,20 +36,32 @@ jobs:
         host: ${{ secrets.VPS_HOST }}
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
+        env:
+          SEATALK_APP_ID: ${{ secrets.SEATALK_APP_ID }}
+          SEATALK_APP_SECRET: ${{ secrets.SEATALK_APP_SECRET }}
+          SEATALK_API_URL: ${{ secrets.SEATALK_API_URL }}
+          SEATALK_AUTH_URL: ${{ secrets.SEATALK_AUTH_URL }}
+          PORT: ${{ secrets.PORT }}
+          SINGLE_CHAT_URL: ${{ secrets.SINGLE_CHAT_URL }}
+          SEATALK_SEND_GROUP_CHAT_URL: ${{ secrets.SEATALK_SEND_GROUP_CHAT_URL }}
+          REGRESSION_GROUP_ID: ${{ secrets.REGRESSION_GROUP_ID }}
         script: |
-          # Check if .env file exists; if not, copy from the repository
-          if [ ! -f /home/arvalinno/seatalk_bot/.env ]; then
-            echo "File .env not found, copying from repository..."
-            mkdir -p /home/arvalinno/seatalk_bot
-            cp /home/arvalinno/seatalk_bot/.env /home/arvalinno/seatalk_bot/.env  # Ganti dengan path relatif yang sesuai
-          fi
-
           # Pull the latest image from Docker Hub
           docker pull mirzarakha2804/talk_bot:${{ github.sha }}
           
-          # Stop and remove old container if exists
+          # Stop and remove the existing container if it exists
           docker stop test-container || true
           docker rm test-container || true
-
-          # Run new container
-          docker run -d -p 6969:6969 --name test-container --env-file /home/arvalinno/seatalk_bot/.env mirzarakha2804/talk_bot:${{ github.sha }}
+          
+          # Run the container with environment variables
+          docker run -d -p 6969:6969 \
+            --name test-container \
+            -e SEATALK_APP_ID=${{ secrets.SEATALK_APP_ID }} \
+            -e SEATALK_APP_SECRET=${{ secrets.SEATALK_APP_SECRET }} \
+            -e SEATALK_API_URL=${{ secrets.SEATALK_API_URL }} \
+            -e SEATALK_AUTH_URL=${{ secrets.SEATALK_AUTH_URL }} \
+            -e PORT=${{ secrets.PORT }} \
+            -e SINGLE_CHAT_URL=${{ secrets.SINGLE_CHAT_URL }} \
+            -e SEATALK_SEND_GROUP_CHAT_URL=${{ secrets.SEATALK_SEND_GROUP_CHAT_URL }} \
+            -e REGRESSION_GROUP_ID=${{ secrets.REGRESSION_GROUP_ID }} \
+            mirzarakha2804/talk_bot:${{ github.sha }}
