@@ -21,7 +21,7 @@ type Config struct {
 
 // LoadConfig loads the configuration from the .env file
 func LoadConfig() *Config {
-	err := godotenv.Load()
+	err := godotenv.Load("/home/arvalinno/seatalk_bot/.env")
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
