@@ -51,3 +51,5 @@ jobs:
           docker stop test-container || true
           docker rm test-container || true
           docker run -d -p 6969:6969 --name test-container mirzarakha2804/talk_bot:${{ github.sha }}
+
+          
