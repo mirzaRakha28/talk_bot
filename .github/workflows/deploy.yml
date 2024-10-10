@@ -37,6 +37,14 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
         script: |
+          # Check if .env file exists; if not, copy from the repository
+          if [ ! -f /home/arvalinno/seatalk_bot/.env ]; then
+            echo "File .env not found, copying from repository..."
+            mkdir -p /home/arvalinno/seatalk_bot
+            cp /home/arvalinno/seatalk_bot/.env /home/arvalinno/seatalk_bot/.env  # Ganti dengan path relatif yang sesuai
+          fi
+
+          # Pull the latest image from Docker Hub
           docker pull mirzarakha2804/talk_bot:${{ github.sha }}
           
           # Stop and remove old container if exists
