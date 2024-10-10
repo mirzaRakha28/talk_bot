@@ -25,7 +25,7 @@ func main() {
 		}
 	})
 	// Start the HTTP server
-	port := ":5030" // Change the port as needed
+	port := ":6969" // Change the port as needed
 	log.Printf("Starting server on port %s...", port)
 	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Fatalf("Failed to start server: %v", err)

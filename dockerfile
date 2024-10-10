@@ -1,32 +1,26 @@
-# Stage 1: Build the Go binary
-FROM golang:1.23-alpine AS builder
+# Use the official Go image as a base image
+FROM golang:1.23-alpine
 
-# Set the working directory inside the container
+# Set environment variables
+ENV GO111MODULE=on
+
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy go.mod and go.sum to download dependencies
-COPY go.mod go.sum ./
+# Copy go.mod and go.sum files first to leverage Docker cache
+COPY go.mod  ./
 
 # Download dependencies
 RUN go mod download
 
-# Copy the entire Go project (including main.go) into the container
+# Copy the rest of your application code
 COPY . .
 
-# Build the Go binary and name it 'seatalk-bot'
-RUN go build -o seatalk-bot ./main.go
+# Build the Go application
+RUN go build -o main .
 
-# Stage 2: Build the final lightweight container
-FROM alpine:latest
+# Expose the port your application runs on
+EXPOSE 7070
 
-# Set the working directory for the final container
-WORKDIR /root/
-
-# Copy the Go binary from the builder container
-COPY --from=builder /app/seatalk-bot .
-
-# Expose port 5030 for the application
-EXPOSE 5030
-
-# Run the Go binary when the container starts
-CMD ["./seatalk-bot"]
+# Command to run the executable
+CMD ["./main"]
