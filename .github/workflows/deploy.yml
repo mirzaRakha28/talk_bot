@@ -24,7 +24,7 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-   - name: Build Docker image
+    - name: Build Docker image
       run: |
         docker build . \
           --build-arg SEATALK_APP_ID=${{ secrets.SEATALK_APP_ID }} \
@@ -36,7 +36,7 @@ jobs:
           --build-arg SEATALK_SEND_GROUP_CHAT_URL=${{ secrets.SEATALK_SEND_GROUP_CHAT_URL }} \
           --build-arg PORT=${{ secrets.PORT }} \
           -t mirzarakha2804/talk_bot:${{ github.sha }}
-          
+
     - name: Push Docker image to Docker Hub
       run: docker push mirzarakha2804/talk_bot:${{ github.sha }}
 
