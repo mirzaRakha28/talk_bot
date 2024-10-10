@@ -10,43 +10,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: 1.20
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.20
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build Docker image
-        run: docker build . -t mirzarakha2804/talk_bot:${{ github.sha }}
+    - name: Build Docker image
+      run: |
+        docker build . \
+          --build-arg SEATALK_APP_ID=${{ secrets.SEATALK_APP_ID }} \
+          --build-arg SEATALK_APP_SECRET=${{ secrets.SEATALK_APP_SECRET }} \
+          --build-arg REGRESSION_GROUP_ID=${{ secrets.REGRESSION_GROUP_ID }} \
+          --build-arg SEATALK_API_URL=${{ secrets.SEATALK_API_URL }} \
+          --build-arg SEATALK_AUTH_URL=${{ secrets.SEATALK_AUTH_URL }} \
+          --build-arg SEATALK_SEND_SINGLE_CHAT_URL=${{ secrets.SEATALK_SEND_SINGLE_CHAT_URL }} \
+          --build-arg SEATALK_SEND_GROUP_CHAT_URL=${{ secrets.SEATALK_SEND_GROUP_CHAT_URL }} \
+          --build-arg PORT=${{ secrets.PORT }} \
+          -t mirzarakha2804/talk_bot:${{ github.sha }}
 
-      - name: Push Docker image to Docker Hub
-        run: docker push mirzarakha2804/talk_bot:${{ github.sha }}
+    - name: Push Docker image to Docker Hub
+      run: docker push mirzarakha2804/talk_bot:${{ github.sha }}
 
-      - name: Deploy to VPS via SSH
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            docker pull mirzarakha2804/talk_bot:${{ github.sha }}
-            docker stop test-container || true
-            docker rm test-container || true
-            docker run -d -p 6969:6969 --name test-container \
-              -e SEATALK_APP_ID=${{ secrets.SEATALK_APP_ID }} \
-              -e SEATALK_APP_SECRET=${{ secrets.SEATALK_APP_SECRET }} \
-              -e SEATALK_API_URL=${{ secrets.SEATALK_API_URL }} \
-              -e SEATALK_AUTH_URL=${{ secrets.SEATALK_AUTH_URL }} \
-              -e PORT=${{ secrets.PORT }} \
-              -e SINGLE_CHAT_URL=${{ secrets.SINGLE_CHAT_URL }} \
-              -e SEATALK_SEND_GROUP_CHAT_URL=${{ secrets.SEATALK_SEND_GROUP_CHAT_URL }} \
-              -e REGRESSION_GROUP_ID=${{ secrets.REGRESSION_GROUP_ID }} \
-              mirzarakha2804/talk_bot:${{ github.sha }}
+    - name: Deploy to VPS via SSH
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        script: |
+          docker pull mirzarakha2804/talk_bot:${{ github.sha }}
+          docker stop test-container || true
+          docker rm test-container || true
+          docker run -d -p 6969:6969 --name test-container mirzarakha2804/talk_bot:${{ github.sha }}
