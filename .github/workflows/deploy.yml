@@ -25,17 +25,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Build Docker image
-      run: |
-        docker build . \
-          --build-arg SEATALK_APP_ID=${{ secrets.SEATALK_APP_ID }} \
-          --build-arg SEATALK_APP_SECRET=${{ secrets.SEATALK_APP_SECRET }} \
-          --build-arg REGRESSION_GROUP_ID=${{ secrets.REGRESSION_GROUP_ID }} \
-          --build-arg SEATALK_API_URL=${{ secrets.SEATALK_API_URL }} \
-          --build-arg SEATALK_AUTH_URL=${{ secrets.SEATALK_AUTH_URL }} \
-          --build-arg SEATALK_SEND_SINGLE_CHAT_URL=${{ secrets.SEATALK_SEND_SINGLE_CHAT_URL }} \
-          --build-arg SEATALK_SEND_GROUP_CHAT_URL=${{ secrets.SEATALK_SEND_GROUP_CHAT_URL }} \
-          --build-arg PORT=${{ secrets.PORT }} \
-          -t mirzarakha2804/talk_bot:${{ github.sha }}
+      run: docker build . -t mirzarakha2804/talk_bot:${{ github.sha }}
 
     - name: Push Docker image to Docker Hub
       run: docker push mirzarakha2804/talk_bot:${{ github.sha }}
@@ -50,7 +40,5 @@ jobs:
           docker pull mirzarakha2804/talk_bot:${{ github.sha }}
           docker stop test-container || true
           docker rm test-container || true
-          docker run -d -p 6969:6969 --name test-container mirzarakha2804/talk_bot:${{ github.sha }}
-
-        
+          docker run -d -p 6969:6969 --name test-container --env-file seatalk_bot/.env mirzarakha2804/talk_bot:${{ github.sha }}
 
