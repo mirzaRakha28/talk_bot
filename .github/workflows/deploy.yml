@@ -40,5 +40,4 @@ jobs:
           docker pull mirzarakha2804/talk_bot:${{ github.sha }}
           docker stop test-container || true
           docker rm test-container || true
-          docker run -d -p 6969:6969 --name test-container --env-file seatalk_bot/.env mirzarakha2804/talk_bot:${{ github.sha }}
-
+          docker run -d -p 6969:6969 --name test-container --env-file /home/arvalinno/seatalk_bot/.env mirzarakha2804/talk_bot:${{ github.sha }}
