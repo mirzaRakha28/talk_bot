@@ -3,17 +3,19 @@ package main
 import (
 	"log"
 	"net/http"
+	"seatalk-bot/internal/config"
+	"seatalk-bot/pkg/eventcallback"
 )
 
 func main() {
 	// Load the configuration
-	// cfg := config.LoadConfig() // Ensure you have a LoadConfig function in your config package
+	cfg := config.LoadConfig() // Ensure you have a LoadConfig function in your config package
 
 	// Initialize the EventCallbackService
-	// eventService := eventcallback.NewEventCallbackService(cfg)
+	eventService := eventcallback.NewEventCallbackService(cfg)
 
 	// Set up the HTTP handler for event callbacks
-	// http.HandleFunc("/event-callback", eventService.HandleEventCallback)
+	http.HandleFunc("/event-callback", eventService.HandleEventCallback)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusOK)
