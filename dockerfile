@@ -8,7 +8,7 @@ ENV GO111MODULE=on
 WORKDIR /app
 
 # Copy go.mod and go.sum files first to leverage Docker cache
-COPY go.mod  ./
+COPY go.mod go.sum ./
 
 # Download dependencies
 RUN go mod download
@@ -20,7 +20,7 @@ COPY . .
 RUN go build -o main .
 
 # Expose the port your application runs on
-EXPOSE 7070
+EXPOSE 6969
 
 # Command to run the executable
 CMD ["./main"]
