@@ -37,8 +37,11 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
         script: |
-          docker pull mirzarakha2804/talk_bot:${{ github.sha }}
+           docker pull mirzarakha2804/talk_bot:${{ github.sha }}
+          
+          # Stop and remove old container if exists
           docker stop test-container || true
           docker rm test-container || true
-          docker run -d -p 6969:6969 --name test-container --env-file /home/arvalinno/seatalk_bot/.env mirzarakha2804/talk_bot:${{ github.sha }}
 
+          # Run new container
+          docker run -d -p 6969:6969 --name test-container --env-file /home/arvalinno/seatalk_bot/.env mirzarakha2804/talk_bot:${{ github.sha }}
