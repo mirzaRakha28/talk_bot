@@ -46,16 +46,5 @@ jobs:
           
           # Run the container with environment variables
           docker run -d -p 6969:6969 \
-            --name test-container \
-            -e SEATALK_APP_ID=${{ secrets.SEATALK_APP_ID }} \
-            -e SEATALK_APP_SECRET=${{ secrets.SEATALK_APP_SECRET }} \
-            -e SEATALK_API_URL=${{ secrets.SEATALK_API_URL }} \
-            -e SEATALK_AUTH_URL=${{ secrets.SEATALK_AUTH_URL }} \
-            -e PORT=${{ secrets.PORT }} \
-            -e SINGLE_CHAT_URL=${{ secrets.SINGLE_CHAT_URL }} \
-            -e SEATALK_SEND_GROUP_CHAT_URL=${{ secrets.SEATALK_SEND_GROUP_CHAT_URL }} \
-            -e REGRESSION_GROUP_ID=${{ secrets.REGRESSION_GROUP_ID }} \
-            mirzarakha2804/talk_bot:${{ github.sha }}
-
-          # Show the logs from the running container (optional for debugging)
-          docker logs test-container
+            --env-file /home/arvalinno/seatalk_bot/.env \
+            --name test-container mirzarakha2804/talk_bot:${{ github.sha }}
