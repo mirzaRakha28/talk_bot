@@ -63,7 +63,5 @@ jobs:
           docker rm test-container || true
           
           # Run the container with environment variables
-          docker run -d -p 6969:6969 \
-          -v /home/arvalinno/seatalk_bot/.env:/app/.env \
-          --name test-container mirzarakha2804/talk_bot:${{ github.sha }}
+          docker run -d -p 6969:6969 --name test-container mirzarakha2804/talk_bot:${{ github.sha }}
 
