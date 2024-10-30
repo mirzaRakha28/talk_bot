@@ -41,6 +41,8 @@ jobs:
         echo "" >> .env
         echo "# Server port" >> .env
         echo "PORT=${{ secrets.PORT }}" >> .env
+        # Output the path of the .env file
+        echo "The .env file has been created at: $(pwd)/.env"
 
     - name: Build Docker image
       run: docker build . -t mirzarakha2804/talk_bot:${{ github.sha }}
