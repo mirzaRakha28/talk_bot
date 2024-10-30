@@ -50,6 +50,17 @@ jobs:
     - name: Push Docker image to Docker Hub
       run: docker push mirzarakha2804/talk_bot:${{ github.sha }}
 
+    - name: Run Docker container locally for testing
+      run: |
+        docker run -d -p 6969:6969 --name test-container mirzarakha2804/talk_bot:${{ github.sha }}
+        sleep 10  # Wait for a few seconds to allow the container to start
+        if [ "$(docker ps -q -f name=test-container)" ]; then
+          echo "Container is running successfully."
+        else
+          echo "Container failed to start. Exiting."
+          exit 1
+        fi
+
     - name: Deploy to VPS via SSH
       uses: appleboy/ssh-action@v0.1.7
       with:
@@ -64,6 +75,5 @@ jobs:
           docker stop test-container || true
           docker rm test-container || true
           
-          # Run the container with environment variables
+          # Run the container
           docker run -d -p 6969:6969 --name test-container mirzarakha2804/talk_bot:${{ github.sha }}
-
