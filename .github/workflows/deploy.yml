@@ -24,6 +24,24 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
+    - name: Create .env file from GitHub Secrets
+      run: |
+        echo "# Seatalk API credentials" > .env
+        echo "SEATALK_APP_ID=${{ secrets.SEATALK_APP_ID }}" >> .env
+        echo "SEATALK_APP_SECRET=${{ secrets.SEATALK_APP_SECRET }}" >> .env
+        echo "" >> .env
+        echo "# Regression Group ID" >> .env
+        echo "REGRESSION_GROUP_ID=${{ secrets.REGRESSION_GROUP_ID }}" >> .env
+        echo "" >> .env
+        echo "# Seatalk API URLs" >> .env
+        echo "SEATALK_API_URL=${{ secrets.SEATALK_API_URL }}" >> .env
+        echo "SEATALK_AUTH_URL=${{ secrets.SEATALK_AUTH_URL }}" >> .env
+        echo "SEATALK_SEND_SINGLE_CHAT_URL=${{ secrets.SEATALK_SEND_SINGLE_CHAT_URL }}" >> .env
+        echo "SEATALK_SEND_GROUP_CHAT_URL=${{ secrets.SEATALK_SEND_GROUP_CHAT_URL }}" >> .env
+        echo "" >> .env
+        echo "# Server port" >> .env
+        echo "PORT=${{ secrets.PORT }}" >> .env
+
     - name: Build Docker image
       run: docker build . -t mirzarakha2804/talk_bot:${{ github.sha }}
 
@@ -47,4 +65,4 @@ jobs:
           # Run the container with environment variables
           docker run -d -p 6969:6969 \
           -v /home/arvalinno/seatalk_bot/.env:/app/.env \
-          --name test-container  mirzarakha2804/talk_bot:${{ github.sha }}
+          --name test-container mirzarakha2804/talk_bot:${{ github.sha }}
